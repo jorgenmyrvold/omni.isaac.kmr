@@ -94,26 +94,19 @@ class KMRROS2(BaseSample):
 
     def _on_logging_event(self, val):
         world = self.get_world()
-        print("WORLD", world.current_time)
         data_logger = world.get_data_logger()
-        print("DATALOGGER", data_logger)
         if not world.get_data_logger().is_started():
             def frame_logging_func(tasks, scene):
-                print("Logging")
                 return {
                     "joint_positions": 0
                 }
 
             data_logger.add_data_frame_logging_func(frame_logging_func)
-            print("Added frame_logging_func to datalogger")
             data_logger.add_data({"joint_positions": 0}, 1.0, 1.0)
-            print("Added data")
         if val:
             data_logger.start()
-            print("Datalogger started")
         else:
             data_logger.pause()
-            print("Datalogger paused")
         return
 
     def print_pos_example(self):
