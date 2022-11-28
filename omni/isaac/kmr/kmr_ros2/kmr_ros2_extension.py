@@ -26,7 +26,8 @@ class KMRROS2Extension(BaseSampleExtension):
         frame = self.get_frame(index=0)
         self._build_config_ui(frame)
         frame = self.get_frame(index=1)
-        self.build_data_logging_ui(frame)
+        # self.build_data_logging_ui(frame)
+        self.build_data_logging_ui_new(frame)
         return
 
 
@@ -130,6 +131,45 @@ class KMRROS2Extension(BaseSampleExtension):
                 }
                 self.ui_elements["Print pos"] = btn_builder(**dict)
                 # self.ui_elements["Print pos"].enabled = True
+
+    def build_data_logging_ui_new(self, frame):
+        with frame:
+            with ui.VStack(spacing=5):
+                frame.title = "Data Logging"
+                frame.visible = True
+                dict = {
+                    "label": "Output Directory",
+                    "type": "stringfield",
+                    "default_val": os.path.join(os.getcwd(), "output_data.json"),
+                    "tooltip": "Output Directory",
+                    "on_clicked_fn": None,
+                    "use_folder_picker": False,
+                    "read_only": False,
+                }
+                self.ui_elements["Output Directory"] = str_builder(**dict)
+
+                dict = {
+                    "label": "Start Logging",
+                    "type": "button",
+                    "a_text": "START",
+                    "b_text": "PAUSE",
+                    "tooltip": "Start Logging",
+                    "on_clicked_fn": self._on_logging_button_event,
+                }
+                self.ui_elements["Start Logging"] = state_btn_builder(**dict)
+                self.ui_elements["Start Logging"].enabled = False
+
+                dict = {
+                    "label": "Save Data",
+                    "type": "button",
+                    "text": "Save Data",
+                    "tooltip": "Save Data",
+                    "on_clicked_fn": self._on_save_data_button_event,
+                }
+
+                self.ui_elements["Save Data"] = btn_builder(**dict)
+                self.ui_elements["Save Data"].enabled = False
+        return
 
     def post_load_button_event(self):
         self.ui_elements["Start Logging"].enabled = True

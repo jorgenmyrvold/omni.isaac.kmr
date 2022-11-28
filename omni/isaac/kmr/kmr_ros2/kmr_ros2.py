@@ -30,20 +30,16 @@ class KMRROS2(BaseSample):
     def setup_scene(self):
         """ used to setup anything in the world, adding tasks happen here for instance.
         """
-        world = self.get_world()
         self._stage = omni.usd.get_context().get_stage()
         self.timeline = omni.timeline.get_timeline_interface()
-        # world.scene.add_default_ground_plane()
 
         environment_path = ENVIRONMENT_BASE_PATH + self.environment + ".usd"
-        
-        environment_ref = self._stage.DefinePrim(ENVIRONMENT_PRIM_PATH)
-        omni.kit.commands.execute("AddReference",
-                stage=self._stage,
-                prim_path=Sdf.Path(ENVIRONMENT_PRIM_PATH),  # an existing prim to add the reference to.
-                reference=Sdf.Reference(environment_path)
-            )
-        
+        omni.kit.commands.execute("CreateReference",
+            usd_context=omni.usd.get_context(),
+            path_to=f"/World/Environment",
+            asset_path=environment_path,   
+        )
+
         omni.kit.commands.execute("CreateReference",
             usd_context=omni.usd.get_context(),
             path_to=f"/World/Robot",
@@ -92,50 +88,35 @@ class KMRROS2(BaseSample):
         data_logger.save(log_path=log_path)
         print("Datalogger saved")
         data_logger.reset()
+        print("Datalogger reset")
         return
     
+
     def _on_logging_event(self, val):
         world = self.get_world()
+        print("WORLD", world.current_time)
         data_logger = world.get_data_logger()
-
-        base_link_path = "/World/Robot/o3dyn/base_link"
-
+        print("DATALOGGER", data_logger)
         if not world.get_data_logger().is_started():
-            # robot_name = self._task_params["robot_name"]["value"]
-            # target_name = self._task_params["target_name"]["value"]
-
-            base_link_prim = self._stage.GetPrimAtPath(base_link_path)
-
             def frame_logging_func(tasks, scene):
-                # curr_prim = self._stage.GetPrimAtPath(base_link_path)
-                # timecode = self.timeline.get_current_time() * self.timeline.get_time_codes_per_seconds()
-                # pose = omni.usd.utils.get_world_transform_matrix(curr_prim, timecode)
-
-                # return {
-                #     "joint_positions": scene.get_object(robot_name).get_joint_positions().tolist(),
-                #     "applied_joint_positions": scene.get_object(robot_name)
-                #     .get_applied_action()
-                #     .joint_positions.tolist(),
-                #     "target_position": scene.get_object(target_name).get_world_pose()[0].tolist(),
-                # }
+                print("Logging")
                 return {
-                    "base_link_pos": (0,0,0),
-                    "wheel_fr": 1,
-                    "wheel_fl": 2,
-                    "wheel_rr": 3,
-                    "wheel_rl": 4,
+                    "joint_positions": 0
                 }
 
             data_logger.add_data_frame_logging_func(frame_logging_func)
-            print("Added frame_logging_func")
-
+            print("Added frame_logging_func to datalogger")
+            data_logger.add_data({"joint_positions": 0}, 1.0, 1.0)
+            print("Added data")
         if val:
             data_logger.start()
+            print("Datalogger started")
         else:
             data_logger.pause()
+            print("Datalogger paused")
         return
 
-    def print_pos(self):
+    def print_pos_example(self):
         usd_context = omni.usd.get_context()
         # Get list of selected primitives
         selected_prims = usd_context.get_selection().get_selected_prim_paths()
@@ -155,7 +136,7 @@ class KMRROS2(BaseSample):
             "Rotation: ", q.GetReal(), ",", q.GetImaginary()[0], ",", q.GetImaginary()[1], ",", q.GetImaginary()[2]
         )
     
-    def print_pos_scene(self):
+    def print_pos(self):
         base_link_path = "/World/Robot/o3dyn/base_link"
         curr_prim = self._stage.GetPrimAtPath(base_link_path)
         timecode = self.timeline.get_current_time() * self.timeline.get_time_codes_per_seconds()
